@@ -11,7 +11,9 @@ def listEmails():
         gmail = GmailScrapper()
         next_page_token = None
         emails_read = 0
+        print("START listEmails")
         while emails_read < 1 or next_page_token != None: 
+            
             response = gmail.listEmails(next_page_token=next_page_token)
             next_page_token = response["next_page_token"]
             emails_db.insert_many(response["emails"])
@@ -41,5 +43,5 @@ def readEmail():
 
 if __name__ == '__main__':
     rabbit = RabbitMQ_Consumer()
-    #listEmails()
+    listEmails()
     #readEmail()

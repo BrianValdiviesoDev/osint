@@ -8,6 +8,7 @@ import base64
 from server.producer import RabbitMQ_Producer
 from models.queues import EventTypes
 from server.mongo import db
+from bs4 import BeautifulSoup
 
 emails_db = db['emails']
 
@@ -93,6 +94,7 @@ class GmailScrapper:
             toEmail = ""
             date = ""
             body = ""
+            links = []
             for header in headers:
                 if "Subject" in header["name"]:
                     subject = header["value"]
@@ -107,6 +109,14 @@ class GmailScrapper:
                 parts = data["payload"]["parts"]
                 body = parts[0]["body"]["data"]
                 body = base64.urlsafe_b64decode(body)
+
+                def buscar_enlaces():
+                    soup = BeautifulSoup(body, 'html.parser')
+                    print(soup)
+                    # Encontrar todos los enlaces
+                    enlaces = soup.find_all('a')
+                    return enlaces
+                links = buscar_enlaces()
             except Exception as e:
                 print(f"Error parsing body {e}")
             
@@ -116,7 +126,8 @@ class GmailScrapper:
                 "date": date,
                 "subject": subject,
                 "body": body,
-                "status": "COMPLETED"
+                "status": "COMPLETED",
+                "links": links,
             }
 
             emails_db.find_one_and_update(
